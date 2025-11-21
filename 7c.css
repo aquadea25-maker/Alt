@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700|Dancing+Script:700&display=swap');
+
+body.dreamy-bg {
+    background: linear-gradient(135deg, #faf8ff 0%, #c1d3fe 100%);
+    font-family: 'Quicksand', Arial, sans-serif;
+    color: #4a4a4a;
+    min-height: 100vh;
+    margin: 0;
+}
+
+nav ul {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    justify-content: center;
+    padding: 1.25rem;
+    background-color: rgba(239, 233, 255, 0.4);
+    border-radius: 20px;
+    margin: 20px auto;
+    width: fit-content;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #7f5fc3;
+    font-weight: bold;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #e67fae;
+}
+
+.main-message {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    margin: 3rem auto;
+    max-width: 650px;
+    box-shadow: 0 8px 24px 0 rgba(125, 95, 195, 0.07);
+}
+
+.main-message h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #bf8ad6;
+    text-shadow: 1px 2px 12px #fff1fc;
+}
+
+footer {
+    text-align: center;
+    margin: 4rem 0 1.5rem 0;
+    font-size: 0.9rem;
+    color: #7f5fc3;
+}
+
+/* Gallery Styles */
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 2rem 0;
+}
+.gallery img {
+    width: 250px;
+    height:180px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px #bf8ad666;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.gallery img:hover {
+    transform: scale(1.05) rotate(-2deg);
+    box-shadow: 0 6px 32px #e67fae99;
+}
+
+/* Blog/Love Notes */
+.notes-section {
+    max-width: 650px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(125, 95, 195, 0.09);
+}
+.note {
+    background: rgba(202,186,255,0.2);
+    border-left: 6px solid #e67fae;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+.note h3 {
+    font-family: 'Dancing Script', cursive;
+    color: #a759cc;
+    margin-bottom: 8px;
+}
+.note .date {
+    display: block;
+    color: #7f5fc3;
+    font-size: 0.85rem;
+    margin-top: 10px;
+}
+
+/* Contact Form */
+.contact-section {
+    max-width: 550px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(125, 95, 195, 0.07);
+}
+.contact-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.contact-section input, .contact-section textarea {
+    padding: 1rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+}
+.contact-section button {
+    padding: 0.9rem;
+    background-color: #bf8ad6;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.contact-section button:hover {
+    background-color: #e67fae;
+}
+.contact-hint {
+    color: #a759cc;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Login Page */
+.login-container {
+    max-width: 350px;
+    margin: 4rem auto;
+    padding: 2rem 2rem;
+    background: rgba(255,255,255,0.8);
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(125, 95, 195, 0.07);
+    text-align: center;
+}
+
+.login-container h2 {
+    color: #bf8ad6;
+    font-family: 'Dancing Script', cursive;
+    margin-bottom: 1.5rem;
+}
+
+#loginForm input {
+    display: block;
+    margin: 1rem auto;
+    padding: 0.9rem;
+    width: 80%;
+    border-radius: 10px;
+    border: none;
+    background-color: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+}
+
+#loginForm button {
+    padding: 0.9rem;
+    width: 85%;
+    background-color: #e67fae;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+
+#loginForm button:hover {
+    background-color: #bf8ad6;
+}
+
+/* Board notes styling */
+#boardNotes {
+    margin-top: 2rem;
+}
+.boardNoteBlock {
+    background: rgba(202,186,255,0.16);
+    border-left: 6px solid #bf8ad6;
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 540px;
+    border-radius: 13px;
+    box-shadow: 0 4px 12px #c1d3fe55;
+    position: relative;
+    font-size: 1.07rem;
+}
+.noteUser {
+    color: #e67fae;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.07rem;
+}
+.noteTime {
+    color: #a759cc;
+    font-size: 0.83rem;
+    margin-left: 6px;
+}
+.noteDelete {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #bf8ad6;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Responsive tweaks */
+@media (max-width: 700px) {
+    .gallery img {
+        width: 95vw;
+        height: 35vw;
+        max-width: 300px;
+        max-height: 200px;
+    }
+    .main-message, .notes-section, .contact-section, .login-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    #boardNotes {
+        max-width: 94vw;
+    }
+}
