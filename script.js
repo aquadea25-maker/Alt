@@ -1,3 +1,9 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 // User database (local only)
 const users = [
     { username: "melil", password: "gega083167", display: "Melil" },
@@ -15,7 +21,6 @@ function clearSession() {
     localStorage.removeItem("dreamyUser");
 }
 
-// LOGIN PAGE
 document.addEventListener("DOMContentLoaded", function () {
     // LOGIN LOGIC
     const loginForm = document.getElementById("loginForm");
@@ -29,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (found) {
                 setSession(found);
                 msg.style.color = "#7f5fc3";
-                msg.textContent = `Welcome, ${found.display}! Magical dream portal opening... 🚀`;
+                msg.textContent = `Welcome, ${found.display}! Magical dream portal opening...`;
                 setTimeout(() => {
                     window.location.href = "index.html";
                 }, 1200);
@@ -78,49 +83,60 @@ document.addEventListener("DOMContentLoaded", function () {
     const boardNotesDiv = document.getElementById("boardNotes");
     if (boardForm && boardNotesDiv) {
         showBoardNotes();
-        boardForm.addEventListener("submit", function (e) {
+        boardForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             const ses = getSession();
             const text = document.getElementById("boardNote").value.trim();
             if (!text) return;
-            let notes = JSON.parse(localStorage.getItem("freedomBoard") || "[]");
-            notes.push({
-                user: ses.display,
+            const { error } = await supabase.from("board_notes").insert({
                 username: ses.username,
-                text,
-                time: new Date().toLocaleString(),
-                id: Date.now()
+                display_name: ses.display,
+                text
             });
-            localStorage.setItem("freedomBoard", JSON.stringify(notes));
+            if (error) {
+                console.error("Failed to post note:", error.message);
+                return;
+            }
             document.getElementById("boardNote").value = "";
             showBoardNotes();
         });
     }
 
-    function showBoardNotes() {
+    async function showBoardNotes() {
         const ses = getSession();
-        let notes = JSON.parse(localStorage.getItem("freedomBoard") || "[]");
+        const { data, error } = await supabase
+            .from("board_notes")
+            .select("*")
+            .order("created_at", { ascending: false });
+        if (error) {
+            boardNotesDiv.innerHTML = "<p>Could not load notes right now.</p>";
+            console.error(error.message);
+            return;
+        }
         boardNotesDiv.innerHTML = "";
-        if (notes.length === 0) {
+        if (!data || data.length === 0) {
             boardNotesDiv.innerHTML = "<p>No notes yet. Start the magic!</p>";
             return;
         }
-        notes.slice().reverse().forEach(note => {
+        data.forEach(note => {
             let block = document.createElement("div");
             block.className = "boardNoteBlock";
             block.innerHTML = `
-                <span class="noteUser">${note.user}</span> 
-                <span class="noteTime">${note.time}</span>
-                <p>${note.text}</p>
-                ${note.username === ses.username ? "<button class='noteDelete' data-id='"+note.id+"'>Delete</button>" : ""}
+                <span class="noteUser">${note.display_name}</span>
+                <span class="noteTime">${new Date(note.created_at).toLocaleString()}</span>
+                <p>${escapeHtml(note.text)}</p>
+                ${note.username === ses.username ? "<button class='noteDelete' data-id='" + note.id + "'>Delete</button>" : ""}
             `;
             boardNotesDiv.appendChild(block);
         });
         boardNotesDiv.querySelectorAll(".noteDelete").forEach(btn => {
-            btn.onclick = function () {
+            btn.onclick = async function () {
                 let id = btn.getAttribute("data-id");
-                notes = notes.filter(n => n.id != id);
-                localStorage.setItem("freedomBoard", JSON.stringify(notes));
+                const { error } = await supabase.from("board_notes").delete().eq("id", id);
+                if (error) {
+                    console.error("Failed to delete note:", error.message);
+                    return;
+                }
                 showBoardNotes();
             }
         });
@@ -131,15 +147,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const contactInbox = document.getElementById("contactInbox");
     const contactSent = document.getElementById("contactSent");
     if (contactForm) {
-        contactForm.addEventListener("submit", function (e) {
+        contactForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             const name = document.getElementById("contactName").value.trim();
             const msg = document.getElementById("contactMsg").value.trim();
             if (!name || !msg) return;
-            let inbox = JSON.parse(localStorage.getItem("contactInbox") || "[]");
-            inbox.push({ user: name, text: msg, time: new Date().toLocaleString() });
-            localStorage.setItem("contactInbox", JSON.stringify(inbox));
-            contactSent.textContent = "Message sent! Scroll down to see it ❤️";
+            const { error } = await supabase.from("contact_messages").insert({ name, text: msg });
+            if (error) {
+                contactSent.textContent = "Could not send your message. Please try again.";
+                console.error(error.message);
+                return;
+            }
+            contactSent.textContent = "Message sent! Scroll down to see it.";
             document.getElementById("contactName").value = "";
             document.getElementById("contactMsg").value = "";
             showContactInbox();
@@ -147,12 +166,25 @@ document.addEventListener("DOMContentLoaded", function () {
         showContactInbox();
     }
 
-    function showContactInbox() {
-        const inbox = JSON.parse(localStorage.getItem("contactInbox") || "[]").slice().reverse();
-        if (contactInbox) {
-            contactInbox.innerHTML = inbox.length === 0 ? "" : inbox.map(msg =>
-                `<div class="boardNoteBlock"><span class="noteUser">${msg.user}</span> <span class="noteTime">${msg.time}</span><p>${msg.text}</p></div>`
-            ).join('');
+    async function showContactInbox() {
+        if (!contactInbox) return;
+        const { data, error } = await supabase
+            .from("contact_messages")
+            .select("*")
+            .order("created_at", { ascending: false });
+        if (error) {
+            contactInbox.innerHTML = "";
+            console.error(error.message);
+            return;
         }
+        contactInbox.innerHTML = data.length === 0 ? "" : data.map(msg =>
+            `<div class="boardNoteBlock"><span class="noteUser">${escapeHtml(msg.name)}</span> <span class="noteTime">${new Date(msg.created_at).toLocaleString()}</span><p>${escapeHtml(msg.text)}</p></div>`
+        ).join('');
     }
 });
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+}
