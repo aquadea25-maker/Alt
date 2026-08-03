@@ -4,13 +4,14 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// User database (local only)
+// Anniversary date — change this to your actual date
+const ANNIVERSARY = new Date('2024-08-16T00:00:00');
+
 const users = [
     { username: "melil", password: "gega083167", display: "Melil" },
     { username: "marlie", password: "ma071004", display: "Marlie" }
 ];
 
-// SESSION HANDLING
 function getSession() {
     return JSON.parse(localStorage.getItem("dreamyUser") || "null");
 }
@@ -19,6 +20,12 @@ function setSession(user) {
 }
 function clearSession() {
     localStorage.removeItem("dreamyUser");
+}
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -35,9 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 setSession(found);
                 msg.style.color = "#7f5fc3";
                 msg.textContent = `Welcome, ${found.display}! Magical dream portal opening...`;
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 1200);
+                setTimeout(() => { window.location.href = "index.html"; }, 1200);
             } else {
                 msg.style.color = "#e67fae";
                 msg.textContent = "Oops! Wrong username or password.";
@@ -48,11 +53,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // LOGOUT BUTTON
     const logoutBtn = document.getElementById("logoutBtn") || document.getElementById("logoutBtnBoard");
     if (logoutBtn) {
-        logoutBtn.onclick = function () {
+        logoutBtn.onclick = function (e) {
+            e.preventDefault();
             clearSession();
             logoutBtn.style.display = "none";
             window.location.href = "login.html";
-        }
+        };
     }
 
     // Show user if logged in (Home)
@@ -61,8 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const ses = getSession();
         if (ses) {
             welcomeUser.innerHTML = `You're logged in as <b>${ses.display}</b>.<br>Have fun exploring! <a href="freedomboard.html">Go to Freedom Board</a>`;
-            document.getElementById("loginLink").style.display = "none";
-            document.getElementById("logoutBtn").style.display = "inline";
+            const ll = document.getElementById("loginLink");
+            if (ll) ll.style.display = "none";
+            const lb = document.getElementById("logoutBtn");
+            if (lb) lb.style.display = "inline";
         }
     }
 
@@ -75,7 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         currentUserBoard.innerHTML = `You are <b>${ses.display}</b>. Share your thoughts now!`;
-        document.getElementById("logoutBtnBoard").style.display = "inline";
+        const lb = document.getElementById("logoutBtnBoard");
+        if (lb) lb.style.display = "inline";
     }
 
     // FREEDOM BOARD LOGIC
@@ -104,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function showBoardNotes() {
         const ses = getSession();
-        const { data, error } = await supabase
+        const { data: notes, error } = await supabase
             .from("board_notes")
             .select("*")
             .order("created_at", { ascending: false });
@@ -113,32 +122,67 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error(error.message);
             return;
         }
-        boardNotesDiv.innerHTML = "";
-        if (!data || data.length === 0) {
+        if (!notes || notes.length === 0) {
             boardNotesDiv.innerHTML = "<p>No notes yet. Start the magic!</p>";
             return;
         }
-        data.forEach(note => {
-            let block = document.createElement("div");
+        const noteIds = notes.map(n => n.id);
+        const { data: likes } = await supabase
+            .from("note_likes")
+            .select("note_id, liked_by")
+            .in("note_id", noteIds);
+
+        boardNotesDiv.innerHTML = "";
+        notes.forEach(note => {
+            const noteLikes = (likes || []).filter(l => l.note_id === note.id);
+            const likeCount = noteLikes.length;
+            const hasLiked = noteLikes.some(l => l.liked_by === ses.username);
+
+            const block = document.createElement("div");
             block.className = "boardNoteBlock";
             block.innerHTML = `
-                <span class="noteUser">${note.display_name}</span>
+                <span class="noteUser">${escapeHtml(note.display_name)}</span>
                 <span class="noteTime">${new Date(note.created_at).toLocaleString()}</span>
                 <p>${escapeHtml(note.text)}</p>
+                <button class="noteLike ${hasLiked ? 'liked' : ''}" data-id="${note.id}">
+                    <span class="heart">&#10084;</span>
+                    <span class="likeCount">${likeCount}</span>
+                </button>
                 ${note.username === ses.username ? "<button class='noteDelete' data-id='" + note.id + "'>Delete</button>" : ""}
             `;
             boardNotesDiv.appendChild(block);
         });
+
         boardNotesDiv.querySelectorAll(".noteDelete").forEach(btn => {
             btn.onclick = async function () {
-                let id = btn.getAttribute("data-id");
+                const id = btn.getAttribute("data-id");
+                await supabase.from("note_likes").delete().eq("note_id", id);
                 const { error } = await supabase.from("board_notes").delete().eq("id", id);
-                if (error) {
-                    console.error("Failed to delete note:", error.message);
-                    return;
+                if (error) { console.error("Failed to delete note:", error.message); return; }
+                showBoardNotes();
+            };
+        });
+
+        boardNotesDiv.querySelectorAll(".noteLike").forEach(btn => {
+            btn.onclick = async function () {
+                const ses2 = getSession();
+                const id = btn.getAttribute("data-id");
+                const hasLiked = btn.classList.contains("liked");
+                if (hasLiked) {
+                    const { error } = await supabase
+                        .from("note_likes")
+                        .delete()
+                        .eq("note_id", id)
+                        .eq("liked_by", ses2.username);
+                    if (error) { console.error(error.message); return; }
+                } else {
+                    const { error } = await supabase
+                        .from("note_likes")
+                        .insert({ note_id: parseInt(id), liked_by: ses2.username });
+                    if (error) { console.error(error.message); return; }
                 }
                 showBoardNotes();
-            }
+            };
         });
     }
 
@@ -172,19 +216,101 @@ document.addEventListener("DOMContentLoaded", function () {
             .from("contact_messages")
             .select("*")
             .order("created_at", { ascending: false });
-        if (error) {
-            contactInbox.innerHTML = "";
-            console.error(error.message);
-            return;
-        }
+        if (error) { contactInbox.innerHTML = ""; console.error(error.message); return; }
         contactInbox.innerHTML = data.length === 0 ? "" : data.map(msg =>
             `<div class="boardNoteBlock"><span class="noteUser">${escapeHtml(msg.name)}</span> <span class="noteTime">${new Date(msg.created_at).toLocaleString()}</span><p>${escapeHtml(msg.text)}</p></div>`
         ).join('');
     }
-});
 
-function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
-}
+    // GALLERY LIGHTBOX
+    const galleryGrid = document.getElementById("galleryGrid");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxClose = document.querySelector(".lightbox-close");
+    if (galleryGrid && lightbox) {
+        galleryGrid.querySelectorAll("img").forEach(img => {
+            img.addEventListener("click", function () {
+                lightboxImg.src = img.src.replace('h=650&w=940', 'h=1200&w=1600');
+                lightboxImg.alt = img.alt;
+                lightbox.classList.add("open");
+            });
+        });
+        if (lightboxClose) {
+            lightboxClose.addEventListener("click", function () {
+                lightbox.classList.remove("open");
+            });
+        }
+        lightbox.addEventListener("click", function (e) {
+            if (e.target === lightbox) lightbox.classList.remove("open");
+        });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") lightbox.classList.remove("open");
+        });
+    }
+
+    // COUNTDOWN TIMER
+    const timeTogether = document.getElementById("timeTogether");
+    const nextMonthsarry = document.getElementById("nextMonthsarry");
+    if (timeTogether || nextMonthsarry) {
+        updateCounters();
+        setInterval(updateCounters, 1000);
+    }
+
+    function updateCounters() {
+        const now = new Date();
+        if (timeTogether) {
+            const diff = now - ANNIVERSARY;
+            if (diff < 0) {
+                timeTogether.innerHTML = "<p>Our journey hasn't started yet!</p>";
+            } else {
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                renderTimeGrid(timeTogether, [
+                    { num: days, label: "Days" },
+                    { num: hours, label: "Hours" },
+                    { num: mins, label: "Minutes" },
+                    { num: secs, label: "Seconds" }
+                ]);
+            }
+        }
+        if (nextMonthsarry) {
+            const next = getNextMonthsarry(now);
+            const diff = next - now;
+            if (diff <= 0) {
+                nextMonthsarry.innerHTML = "<p>It's our monthsarry today!</p>";
+            } else {
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                renderTimeGrid(nextMonthsarry, [
+                    { num: days, label: "Days" },
+                    { num: hours, label: "Hours" },
+                    { num: mins, label: "Minutes" },
+                    { num: secs, label: "Seconds" }
+                ]);
+            }
+        }
+    }
+
+    function getNextMonthsarry(now) {
+        const base = new Date(ANNIVERSARY);
+        const next = new Date(now.getFullYear(), now.getMonth(), base.getDate(), 0, 0, 0);
+        if (next <= now) {
+            next.setMonth(next.getMonth() + 1);
+        }
+        return next;
+    }
+
+    function renderTimeGrid(container, units) {
+        const existing = container.querySelectorAll(".time-num");
+        container.innerHTML = units.map((u, i) => {
+            const prevVal = existing[i] ? existing[i].textContent : "";
+            const newVal = String(u.num).padStart(2, "0");
+            const tickClass = prevVal !== "" && prevVal !== newVal ? "tick" : "";
+            return `<div class="time-unit"><span class="time-num ${tickClass}">${newVal}</span><span class="time-label">${u.label}</span></div>`;
+        }).join("");
+    }
+});

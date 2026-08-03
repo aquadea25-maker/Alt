@@ -18,6 +18,7 @@ nav ul {
     border-radius: 20px;
     margin: 20px auto;
     width: fit-content;
+    flex-wrap: wrap;
 }
 
 nav ul li a {
@@ -72,10 +73,65 @@ footer {
     border-radius: 18px;
     box-shadow: 0 4px 16px #bf8ad666;
     transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
 }
 .gallery img:hover {
     transform: scale(1.05) rotate(-2deg);
     box-shadow: 0 6px 32px #e67fae99;
+}
+.gallery-hint {
+    text-align: center;
+    color: #a759cc;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+}
+
+/* Lightbox */
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(30, 20, 50, 0.85);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.lightbox.open {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+.lightbox img {
+    max-width: 85vw;
+    max-height: 80vh;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    animation: zoomIn 0.35s ease;
+}
+.lightbox-close {
+    position: absolute;
+    top: 24px;
+    right: 36px;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    user-select: none;
+}
+.lightbox-close:hover {
+    color: #e67fae;
+    transform: scale(1.2);
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 /* Blog/Love Notes */
@@ -210,6 +266,11 @@ footer {
     box-shadow: 0 4px 12px #c1d3fe55;
     position: relative;
     font-size: 1.07rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.boardNoteBlock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px #c1d3fe88;
 }
 .noteUser {
     color: #e67fae;
@@ -232,6 +293,103 @@ footer {
     cursor: pointer;
     font-weight: bold;
 }
+.noteLike {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border: 2px solid #e67fae;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.5);
+    color: #e67fae;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    user-select: none;
+}
+.noteLike:hover {
+    background: #e67fae22;
+    transform: scale(1.08);
+}
+.noteLike.liked {
+    background: #e67fae;
+    color: #fff;
+    border-color: #e67fae;
+}
+.noteLike .heart {
+    font-size: 1rem;
+    transition: transform 0.3s;
+}
+.noteLike.liked .heart {
+    animation: heartPop 0.4s ease;
+}
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+    100% { transform: scale(1); }
+}
+
+/* Countdown Page */
+.countdown-section {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 1rem;
+    text-align: center;
+}
+.countdown-section > h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #bf8ad6;
+    text-shadow: 1px 2px 12px #fff1fc;
+    margin-bottom: 2rem;
+}
+.countdown-card {
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 8px 24px rgba(125, 95, 195, 0.09);
+}
+.countdown-card h2 {
+    color: #a759cc;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+}
+.time-grid {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+.time-num {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #7f5fc3;
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.2s;
+}
+.time-num.tick {
+    animation: tickPulse 0.5s ease;
+}
+@keyframes tickPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); color: #e67fae; }
+    100% { transform: scale(1); }
+}
+.time-label {
+    font-size: 0.85rem;
+    color: #a759cc;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
 
 /* Responsive tweaks */
 @media (max-width: 700px) {
@@ -241,11 +399,18 @@ footer {
         max-width: 300px;
         max-height: 200px;
     }
-    .main-message, .notes-section, .contact-section, .login-container {
+    .main-message, .notes-section, .contact-section, .login-container,
+    .countdown-card {
         margin: 1rem;
         padding: 1rem;
     }
     #boardNotes {
         max-width: 94vw;
+    }
+    .time-num {
+        font-size: 2rem;
+    }
+    .time-unit {
+        min-width: 60px;
     }
 }

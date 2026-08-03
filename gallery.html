@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dreamy Gallery</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -9,24 +10,33 @@
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
+            <li><a href="login.html" id="loginLink">Login</a></li>
+            <li><a href="freedomboard.html">Freedom Board</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="blog.html">Love Notes</a></li>
+            <li><a href="countdown.html">Countdown</a></li>
             <li><a href="contact.html">Contact</a></li>
+            <li><a href="#" id="logoutBtn" style="display:none">Logout</a></li>
         </ul>
     </nav>
     <section>
         <h1>Our Memories</h1>
-        <div class="gallery">
+        <p class="gallery-hint">Click any photo to see it bigger!</p>
+        <div class="gallery" id="galleryGrid">
             <img src="https://images.pexels.com/photos/30016033/pexels-photo-30016033.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="A couple romantically embracing in an open field">
             <img src="https://images.pexels.com/photos/1174958/pexels-photo-1174958.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="A couple enjoying a cozy moment on a park bench">
             <img src="https://images.pexels.com/photos/29189812/pexels-photo-29189812.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="A romantic couple embracing outdoors in warm sunlight">
-            <!-- Add your own photos here! For your own images, upload them to GitHub or image hosting and get a web URL -->
         </div>
     </section>
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightboxImg" src="" alt="Enlarged photo">
+    </div>
     <footer>
         <small>
             These memories are only ours. &copy; 2025
         </small>
     </footer>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
