@@ -1096,3 +1096,37 @@ footer {
     white-space: nowrap;
     border: 0;
 }
+/* Chat Load More Button */
+.chat-load-more {
+    display: block;
+    margin: 0.5rem auto;
+    padding: 0.5rem 1.5rem;
+    background: rgba(191, 138, 214, 0.2);
+    color: #7f5fc3;
+    border: 1px solid rgba(191, 138, 214, 0.3);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    flex-shrink: 0;
+}
+.chat-load-more:hover {
+    background: rgba(191, 138, 214, 0.35);
+    color: #bf8ad6;
+}
+.chat-load-more:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* End of chat marker */
+.chat-end-marker {
+    text-align: center;
+    color: #a759cc;
+    font-size: 0.8rem;
+    font-style: italic;
+    margin: 0.5rem auto;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
