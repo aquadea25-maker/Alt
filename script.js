@@ -4,8 +4,9 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Anniversary date — change this to your actual date
-const ANNIVERSARY = new Date('2024-08-16T00:00:00');
+// Anniversary date — September 28, 2024
+const ANNIVERSARY = new Date('2024-09-28T00:00:00');
+const ANNIVERSARY_DAY = 28;
 
 const users = [
     { username: "melil", password: "gega083167", display: "Melil" },
@@ -66,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (welcomeUser) {
         const ses = getSession();
         if (ses) {
-            welcomeUser.innerHTML = `You're logged in as <b>${ses.display}</b>.<br>Have fun exploring! <a href="freedomboard.html">Go to Freedom Board</a>`;
+            welcomeUser.innerHTML = `You're logged in as <b>${ses.display}</b>.<br>Have fun exploring!`;
             const ll = document.getElementById("loginLink");
             if (ll) ll.style.display = "none";
             const lb = document.getElementById("logoutBtn");
@@ -222,24 +223,146 @@ document.addEventListener("DOMContentLoaded", function () {
         ).join('');
     }
 
-    // GALLERY LIGHTBOX
+    // GALLERY: upload + display
     const galleryGrid = document.getElementById("galleryGrid");
+    const uploadForm = document.getElementById("uploadForm");
     const lightbox = document.getElementById("lightbox");
     const lightboxImg = document.getElementById("lightboxImg");
     const lightboxClose = document.querySelector(".lightbox-close");
-    if (galleryGrid && lightbox) {
-        galleryGrid.querySelectorAll("img").forEach(img => {
-            img.addEventListener("click", function () {
-                lightboxImg.src = img.src.replace('h=650&w=940', 'h=1200&w=1600');
-                lightboxImg.alt = img.alt;
-                lightbox.classList.add("open");
-            });
-        });
-        if (lightboxClose) {
-            lightboxClose.addEventListener("click", function () {
-                lightbox.classList.remove("open");
-            });
+    const lightboxCaption = document.getElementById("lightboxCaption");
+    const uploadMsg = document.getElementById("uploadMsg");
+
+    if (uploadForm) {
+        const ses = getSession();
+        if (!ses) {
+            uploadMsg.textContent = "Please log in to upload photos.";
         }
+        uploadForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const ses = getSession();
+            if (!ses) {
+                uploadMsg.textContent = "Please log in first.";
+                return;
+            }
+            const fileInput = document.getElementById("photoFile");
+            const captionInput = document.getElementById("photoCaption");
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            uploadMsg.textContent = "Uploading...";
+            const ext = file.name.split('.').pop();
+            const fileName = `photo_${Date.now()}.${ext}`;
+            const filePath = `${ses.username}/${fileName}`;
+
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from("gallery-photos")
+                .upload(filePath, file);
+
+            if (uploadError) {
+                uploadMsg.textContent = "Upload failed. Please try again.";
+                console.error(uploadError.message);
+                return;
+            }
+
+            const { data: urlData } = supabase
+                .storage
+                .from("gallery-photos")
+                .getPublicUrl(filePath);
+
+            const imageUrl = urlData.publicUrl;
+            const caption = captionInput.value.trim();
+
+            const { error: dbError } = await supabase.from("gallery_uploads").insert({
+                uploaded_by: ses.username,
+                display_name: ses.display,
+                image_url: imageUrl,
+                caption: caption
+            });
+
+            if (dbError) {
+                uploadMsg.textContent = "Could not save photo info. Please try again.";
+                console.error(dbError.message);
+                return;
+            }
+
+            uploadMsg.textContent = "Photo uploaded!";
+            fileInput.value = "";
+            captionInput.value = "";
+            loadGallery();
+        });
+    }
+
+    if (galleryGrid) {
+        loadGallery();
+    }
+
+    async function loadGallery() {
+        const ses = getSession();
+        const { data: photos, error } = await supabase
+            .from("gallery_uploads")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error(error.message);
+            return;
+        }
+
+        galleryGrid.innerHTML = "";
+
+        // Default placeholder photos
+        const defaults = [
+            { image_url: "https://images.pexels.com/photos/30016033/pexels-photo-30016033.jpeg?auto=compress&cs=tinysrgb&h=650&w=940", caption: "A couple romantically embracing in an open field" },
+            { image_url: "https://images.pexels.com/photos/1174958/pexels-photo-1174958.jpeg?auto=compress&cs=tinysrgb&h=650&w=940", caption: "A couple enjoying a cozy moment on a park bench" },
+            { image_url: "https://images.pexels.com/photos/29189812/pexels-photo-29189812.jpeg?auto=compress&cs=tinysrgb&h=650&w=940", caption: "A romantic couple embracing outdoors in warm sunlight" }
+        ];
+
+        const allPhotos = [...(photos || []).map(p => ({ ...p, isUpload: true })), ...defaults.map(d => ({ ...d, isUpload: false }))];
+
+        allPhotos.forEach(photo => {
+            const item = document.createElement("div");
+            item.className = "gallery-item";
+            const img = document.createElement("img");
+            img.src = photo.image_url;
+            img.alt = photo.caption || "Our photo";
+            img.addEventListener("click", function () {
+                if (lightbox) {
+                    lightboxImg.src = img.src.replace('h=650&w=940', 'h=1200&w=1600');
+                    lightboxImg.alt = img.alt;
+                    if (lightboxCaption) lightboxCaption.textContent = photo.caption || "";
+                    lightbox.classList.add("open");
+                }
+            });
+            item.appendChild(img);
+
+            if (photo.caption) {
+                const cap = document.createElement("p");
+                cap.className = "gallery-caption";
+                cap.textContent = photo.caption;
+                item.appendChild(cap);
+            }
+
+            if (photo.isUpload && ses && photo.uploaded_by === ses.username) {
+                const del = document.createElement("button");
+                del.className = "gallery-delete";
+                del.innerHTML = "&times;";
+                del.addEventListener("click", async function (e) {
+                    e.stopPropagation();
+                    await supabase.from("gallery_uploads").delete().eq("id", photo.id);
+                    loadGallery();
+                });
+                item.appendChild(del);
+            }
+
+            galleryGrid.appendChild(item);
+        });
+    }
+
+    if (lightbox && lightboxClose) {
+        lightboxClose.addEventListener("click", function () {
+            lightbox.classList.remove("open");
+        });
         lightbox.addEventListener("click", function (e) {
             if (e.target === lightbox) lightbox.classList.remove("open");
         });
@@ -248,10 +371,178 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // LOVE NOTES: free-form writing
+    const noteForm = document.getElementById("noteForm");
+    const notesList = document.getElementById("notesList");
+    const noteMsg = document.getElementById("noteMsg");
+
+    if (noteForm) {
+        const ses = getSession();
+        if (!ses) {
+            noteMsg.textContent = "Please log in to write love notes.";
+        }
+        loadLoveNotes();
+        noteForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const ses = getSession();
+            if (!ses) {
+                noteMsg.textContent = "Please log in first.";
+                return;
+            }
+            const title = document.getElementById("noteTitle").value.trim();
+            const body = document.getElementById("noteBody").value.trim();
+            if (!body) return;
+
+            const { error } = await supabase.from("love_notes").insert({
+                author: ses.username,
+                display_name: ses.display,
+                title: title,
+                body: body
+            });
+
+            if (error) {
+                noteMsg.textContent = "Could not save your note. Please try again.";
+                console.error(error.message);
+                return;
+            }
+
+            noteMsg.textContent = "Your love note has been posted!";
+            document.getElementById("noteTitle").value = "";
+            document.getElementById("noteBody").value = "";
+            loadLoveNotes();
+        });
+    }
+
+    async function loadLoveNotes() {
+        if (!notesList) return;
+        const ses = getSession();
+        const { data: notes, error } = await supabase
+            .from("love_notes")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            notesList.innerHTML = "<p>Could not load love notes right now.</p>";
+            console.error(error.message);
+            return;
+        }
+
+        if (!notes || notes.length === 0) {
+            notesList.innerHTML = "<p class='gallery-hint'>No love notes yet. Write the first one!</p>";
+            return;
+        }
+
+        notesList.innerHTML = "";
+        notes.forEach(note => {
+            const block = document.createElement("div");
+            block.className = "love-note";
+            block.innerHTML = `
+                ${note.title ? "<h3>" + escapeHtml(note.title) + "</h3>" : ""}
+                <span class="note-author">From ${escapeHtml(note.display_name)}</span>
+                <p class="note-body">${escapeHtml(note.body)}</p>
+                <span class="date">${new Date(note.created_at).toLocaleString()}</span>
+                ${ses && note.author === ses.username ? "<button class='note-delete-btn' data-id='" + note.id + "'>Delete</button>" : ""}
+            `;
+            notesList.appendChild(block);
+        });
+
+        notesList.querySelectorAll(".note-delete-btn").forEach(btn => {
+            btn.onclick = async function () {
+                const id = btn.getAttribute("data-id");
+                const { error } = await supabase.from("love_notes").delete().eq("id", id);
+                if (error) { console.error(error.message); return; }
+                loadLoveNotes();
+            };
+        });
+    }
+
+    // CHAT: real-time messaging
+    const chatBox = document.getElementById("chatBox");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+
+    if (chatForm && chatBox) {
+        const ses = getSession();
+        if (!ses) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        let loaded = false;
+
+        async function loadChatMessages() {
+            const { data: messages, error } = await supabase
+                .from("chat_messages")
+                .select("*")
+                .order("created_at", { ascending: true })
+                .limit(100);
+
+            if (error) {
+                console.error(error.message);
+                return;
+            }
+
+            chatBox.innerHTML = "";
+            (messages || []).forEach(msg => {
+                appendChatMessage(msg, ses.username);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+            loaded = true;
+        }
+
+        function appendChatMessage(msg, currentUsername) {
+            const div = document.createElement("div");
+            const isMine = msg.sender === currentUsername;
+            div.className = "chat-msg " + (isMine ? "mine" : "theirs");
+            div.innerHTML = `
+                ${!isMine ? "<div class='chat-sender'>" + escapeHtml(msg.display_name) + "</div>" : ""}
+                <div>${escapeHtml(msg.body)}</div>
+                <div class="chat-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            chatBox.appendChild(div);
+        }
+
+        loadChatMessages();
+
+        // Real-time subscription
+        const subscription = supabase
+            .channel("chat_messages_channel")
+            .on("postgres_changes", {
+                event: "INSERT",
+                schema: "public",
+                table: "chat_messages"
+            }, (payload) => {
+                if (!loaded) return;
+                appendChatMessage(payload.new, ses.username);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .subscribe();
+
+        chatForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const body = chatInput.value.trim();
+            if (!body) return;
+
+            const { error } = await supabase.from("chat_messages").insert({
+                sender: ses.username,
+                display_name: ses.display,
+                body: body
+            });
+
+            if (error) {
+                console.error(error.message);
+                return;
+            }
+
+            chatInput.value = "";
+        });
+    }
+
     // COUNTDOWN TIMER
     const timeTogether = document.getElementById("timeTogether");
     const nextMonthsarry = document.getElementById("nextMonthsarry");
-    if (timeTogether || nextMonthsarry) {
+    const homeCounter = document.getElementById("homeCounter");
+    if (timeTogether || nextMonthsarry || homeCounter) {
         updateCounters();
         setInterval(updateCounters, 1000);
     }
@@ -293,11 +584,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 ]);
             }
         }
+        if (homeCounter) {
+            const diff = now - ANNIVERSARY;
+            if (diff >= 0) {
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                renderTimeGrid(homeCounter, [
+                    { num: days, label: "Days" },
+                    { num: hours, label: "Hours" },
+                    { num: mins, label: "Mins" },
+                    { num: secs, label: "Secs" }
+                ]);
+            }
+        }
     }
 
     function getNextMonthsarry(now) {
-        const base = new Date(ANNIVERSARY);
-        const next = new Date(now.getFullYear(), now.getMonth(), base.getDate(), 0, 0, 0);
+        const next = new Date(now.getFullYear(), now.getMonth(), ANNIVERSARY_DAY, 0, 0, 0);
         if (next <= now) {
             next.setMonth(next.getMonth() + 1);
         }

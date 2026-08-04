@@ -34,21 +34,158 @@ nav ul li a:hover {
     color: #e67fae;
 }
 
-.main-message {
+.page-title {
     text-align: center;
-    padding: 4rem 2rem;
-    background: rgba(255,255,255,0.7);
-    border-radius: 20px;
-    margin: 3rem auto;
-    max-width: 650px;
-    box-shadow: 0 8px 24px 0 rgba(125, 95, 195, 0.07);
-}
-
-.main-message h1 {
     font-family: 'Dancing Script', cursive;
     font-size: 2.5rem;
     color: #bf8ad6;
     text-shadow: 1px 2px 12px #fff1fc;
+    margin-top: 1.5rem;
+}
+
+/* Hero / Home */
+.hero-section {
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    margin: 2rem auto;
+    max-width: 750px;
+    box-shadow: 0 8px 24px 0 rgba(125, 95, 195, 0.07);
+}
+.hero-title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3rem;
+    color: #bf8ad6;
+    text-shadow: 1px 2px 12px #fff1fc;
+    margin-bottom: 0.5rem;
+}
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #7f5fc3;
+    margin-bottom: 1rem;
+}
+.welcome-user {
+    color: #a759cc;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+.hero-counter {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+}
+.hero-counter .time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+}
+.hero-counter .time-num {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #7f5fc3;
+    font-variant-numeric: tabular-nums;
+}
+.hero-counter .time-label {
+    font-size: 0.8rem;
+    color: #a759cc;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.hero-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+.hero-link {
+    display: inline-block;
+    padding: 0.7rem 1.8rem;
+    background: #bf8ad6;
+    color: #fff;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: background 0.3s, transform 0.2s;
+}
+.hero-link:hover {
+    background: #e67fae;
+    transform: translateY(-2px);
+}
+
+/* Feature cards on home */
+.home-features {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.section-heading {
+    text-align: center;
+    font-family: 'Dancing Script', cursive;
+    font-size: 2rem;
+    color: #bf8ad6;
+    margin-bottom: 1.5rem;
+}
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+.feature-card {
+    display: block;
+    text-decoration: none;
+    background: rgba(255,255,255,0.7);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: 0 4px 12px rgba(125, 95, 195, 0.06);
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(125, 95, 195, 0.15);
+}
+.feature-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.feature-card h3 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.4rem;
+    color: #a759cc;
+    margin: 0.3rem 0;
+}
+.feature-card p {
+    font-size: 0.9rem;
+    color: #7f5fc3;
+    line-height: 1.5;
+}
+
+/* Quote section */
+.home-quote {
+    text-align: center;
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: rgba(255,255,255,0.5);
+    border-radius: 20px;
+}
+.quote-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    color: #bf8ad6;
+    line-height: 1.4;
+}
+.quote-author {
+    color: #a759cc;
+    font-size: 1rem;
+    margin-top: 0.5rem;
 }
 
 footer {
@@ -66,9 +203,12 @@ footer {
     justify-content: center;
     padding: 2rem 0;
 }
+.gallery-item {
+    position: relative;
+}
 .gallery img {
     width: 250px;
-    height:180px;
+    height: 180px;
     object-fit: cover;
     border-radius: 18px;
     box-shadow: 0 4px 16px #bf8ad666;
@@ -85,6 +225,89 @@ footer {
     font-size: 0.95rem;
     margin-top: 0.5rem;
 }
+.gallery-caption {
+    text-align: center;
+    color: #7f5fc3;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    max-width: 250px;
+}
+.gallery-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.8);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #e67fae;
+    transition: background 0.2s;
+}
+.gallery-delete:hover {
+    background: #e67fae;
+    color: #fff;
+}
+
+/* Upload box */
+.upload-box {
+    max-width: 500px;
+    margin: 1.5rem auto;
+    padding: 1.5rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(125, 95, 195, 0.06);
+}
+.upload-box h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.6rem;
+    color: #a759cc;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.upload-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.upload-box input[type="file"] {
+    padding: 0.6rem;
+    border-radius: 10px;
+    background: #efebfa;
+    border: none;
+    font-family: 'Quicksand', Arial, sans-serif;
+    color: #7f5fc3;
+}
+.upload-box input[type="text"] {
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    background: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+}
+.upload-box button {
+    padding: 0.8rem;
+    background: #bf8ad6;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.upload-box button:hover {
+    background: #e67fae;
+}
+.upload-msg {
+    text-align: center;
+    color: #a759cc;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
 
 /* Lightbox */
 .lightbox {
@@ -98,6 +321,7 @@ footer {
     background: rgba(30, 20, 50, 0.85);
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     backdrop-filter: blur(4px);
 }
 .lightbox.open {
@@ -106,10 +330,17 @@ footer {
 }
 .lightbox img {
     max-width: 85vw;
-    max-height: 80vh;
+    max-height: 75vh;
     border-radius: 16px;
     box-shadow: 0 12px 48px rgba(0,0,0,0.5);
     animation: zoomIn 0.35s ease;
+}
+.lightbox-caption {
+    color: #fff;
+    font-size: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+    max-width: 80vw;
 }
 .lightbox-close {
     position: absolute;
@@ -134,32 +365,191 @@ footer {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* Blog/Love Notes */
+/* Love Notes */
 .notes-section {
-    max-width: 650px;
-    margin: 3rem auto;
+    max-width: 700px;
+    margin: 2rem auto;
     padding: 2rem;
     background: rgba(255,255,255,0.7);
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(125, 95, 195, 0.09);
 }
-.note {
+.note-compose {
+    background: rgba(202,186,255,0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.note-compose form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.note-compose input[type="text"] {
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    background: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+    font-family: 'Quicksand', Arial, sans-serif;
+}
+.note-compose textarea {
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    background: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+    font-family: 'Quicksand', Arial, sans-serif;
+    resize: vertical;
+    line-height: 1.5;
+}
+.note-compose button {
+    padding: 0.8rem;
+    background: #bf8ad6;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.3s;
+    align-self: flex-start;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+.note-compose button:hover {
+    background: #e67fae;
+}
+.love-note {
     background: rgba(202,186,255,0.2);
     border-left: 6px solid #e67fae;
-    margin: 2rem 0;
+    margin: 1.5rem 0;
     padding: 1.5rem;
     border-radius: 12px;
+    position: relative;
 }
-.note h3 {
+.love-note h3 {
     font-family: 'Dancing Script', cursive;
     color: #a759cc;
-    margin-bottom: 8px;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
 }
-.note .date {
+.love-note .note-author {
+    color: #e67fae;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+.love-note .note-body {
+    color: #4a4a4a;
+    line-height: 1.6;
+    margin: 0.8rem 0;
+    white-space: pre-wrap;
+}
+.love-note .date {
     display: block;
     color: #7f5fc3;
     font-size: 0.85rem;
     margin-top: 10px;
+}
+.love-note .note-delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #bf8ad6;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Chat */
+.chat-section {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(125, 95, 195, 0.09);
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+}
+.chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border-radius: 12px;
+    background: rgba(239, 233, 255, 0.3);
+}
+.chat-msg {
+    max-width: 75%;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    line-height: 1.4;
+    animation: chatFadeIn 0.3s ease;
+}
+@keyframes chatFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.chat-msg.mine {
+    align-self: flex-end;
+    background: #bf8ad6;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.chat-msg.theirs {
+    align-self: flex-start;
+    background: #efebfa;
+    color: #4a4a4a;
+    border-bottom-left-radius: 4px;
+}
+.chat-msg .chat-sender {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    opacity: 0.8;
+}
+.chat-msg .chat-time {
+    font-size: 0.72rem;
+    margin-top: 3px;
+    opacity: 0.6;
+}
+.chat-input-row {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+.chat-input-row input {
+    flex: 1;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    background: #efebfa;
+    font-size: 1rem;
+    color: #7f5fc3;
+    font-family: 'Quicksand', Arial, sans-serif;
+}
+.chat-input-row button {
+    padding: 0.8rem 1.5rem;
+    background: #bf8ad6;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Quicksand', Arial, sans-serif;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.chat-input-row button:hover {
+    background: #e67fae;
 }
 
 /* Contact Form */
@@ -400,7 +790,7 @@ footer {
         max-height: 200px;
     }
     .main-message, .notes-section, .contact-section, .login-container,
-    .countdown-card {
+    .countdown-card, .hero-section, .upload-box, .chat-section {
         margin: 1rem;
         padding: 1rem;
     }
@@ -412,5 +802,14 @@ footer {
     }
     .time-unit {
         min-width: 60px;
+    }
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    .feature-cards {
+        grid-template-columns: 1fr;
+    }
+    .chat-section {
+        height: 85vh;
     }
 }

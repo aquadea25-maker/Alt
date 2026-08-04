@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Notes</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -9,29 +10,34 @@
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
+            <li><a href="login.html" id="loginLink">Login</a></li>
+            <li><a href="freedomboard.html">Freedom Board</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="blog.html">Love Notes</a></li>
+            <li><a href="chat.html">Chat</a></li>
             <li><a href="countdown.html">Countdown</a></li>
             <li><a href="contact.html">Contact</a></li>
+            <li><a href="#" id="logoutBtn" style="display:none">Logout</a></li>
         </ul>
     </nav>
     <section class="notes-section">
-        <h1>💌</h1>
-        <div class="note">
-            <h3>To My Love</h3>
-            <p>
-                Every day with you is brighter than before without you.<br>
-                You are my safe place and my hope.<br>
-                <i>cheers to more months, years, and endless memories together.</i>
-            </p>
-            <span class="date">Posted: Monthsarry 2025</span>
+        <h1 class="page-title">Love Notes</h1>
+        <p class="gallery-hint">Write freely from the heart. Your note will be saved for both of you to read.</p>
+        <div class="note-compose">
+            <form id="noteForm">
+                <input type="text" id="noteTitle" placeholder="Title (optional)" maxlength="100">
+                <textarea id="noteBody" placeholder="Write your love note here..." rows="6" required></textarea>
+                <button type="submit">Post Love Note</button>
+            </form>
+            <p id="noteMsg" class="upload-msg"></p>
         </div>
-        <!-- Add more notes here, or use the Freedom Board for live sharing! -->
+        <div id="notesList"></div>
     </section>
     <footer>
         <small>
             Forever us. &copy; 2025
         </small>
     </footer>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

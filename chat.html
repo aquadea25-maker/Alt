@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Contact</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dreamy-bg">
@@ -19,19 +20,18 @@
             <li><a href="#" id="logoutBtn" style="display:none">Logout</a></li>
         </ul>
     </nav>
-    <section class="contact-section">
-        <h1>Send me a secret love letter 💫</h1>
-        <form id="contactForm">
-            <input type="text" id="contactName" placeholder="Your Name" required>
-            <textarea id="contactMsg" placeholder="Your message..." required></textarea>
+    <section class="chat-section">
+        <h1 class="page-title">Our Chat</h1>
+        <p class="gallery-hint">Talk to each other in real time. Messages appear instantly for both of you.</p>
+        <div class="chat-box" id="chatBox"></div>
+        <form id="chatForm" class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" required>
             <button type="submit">Send</button>
         </form>
-        <p class="contact-hint" id="contactSent">(This message will appear below!)</p>
-        <div id="contactInbox"></div>
     </section>
     <footer>
         <small>
-            Waiting for your words. &copy; 2025
+            Every word matters. &copy; 2025
         </small>
     </footer>
     <script type="module" src="script.js"></script>
