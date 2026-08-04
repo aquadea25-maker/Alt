@@ -1,0 +1,44 @@
+Live Site Review - Detailed Findings
+=====================================
+
+The live site at sparkly-buttercream-e5e521.netlify.app IS running our NEW modular version:
+- Uses Supabase auth (email/password with Netlify Identity)
+- Has profile.html page
+- Has nav.js injection (nav-placeholder div)
+- Has chat pagination (PAGE_SIZE in the bundle)
+- Has all feature modules
+- CSS is bundled in app-C6bswuRF.css
+
+Key observations from the JS bundle:
+1. Auth: Uses Netlify Identity for email/password auth (not the old local auth)
+2. Login uses email + password fields
+3. Has signUp with email confirmation requirement
+4. Profile system uses localStorage for display_name, avatar_url, bio
+5. Nav shows profile avatar with display name
+6. Chat has pagination (PAGE_SIZE=50)
+
+Pages verified as deployed:
+- index.html ✓ (with hero, countdown, feature cards)
+- login.html ✓ (email/password with Supabase/Netlify auth)
+- profile.html ✓ (avatar upload, display name, bio)
+- chat.html ✓ (with chat-box, form, send button)
+- freedomboard.html ✓
+- gallery.html ✓
+- blog.html ✓
+- countdown.html ✓
+- contact.html ✓
+
+Live site already has:
+- Supabase/Netlify auth
+- Profile editing
+- Back buttons (via nav)
+- Chat pagination
+- Loading spinners
+- Error states with retry
+
+ISSUES TO IMPROVE:
+1. No back button visible on pages (the nav-placeholder injects nav but no explicit back button)
+2. The homepage doesn't show the countdown timer (countdown may need to be on homepage)
+3. No "Load older messages" button visible in chat (pagination exists in code)
+4. Pages redirect to login if not authenticated (good)
+5. The site could use: dark mode toggle, notifications, shared memories timeline, music player

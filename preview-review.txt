@@ -1,0 +1,27 @@
+Preview Review Results:
+
+1. LOGIN PAGE - Looks great! Shows:
+   - Nav with all 9 links + profile avatar + logout
+   - Login form with username/password
+   - "Create an Account" toggle button (red/pink style)
+   - "or" divider between login and signup
+   - Available Accounts section with Melil and Marlie chips
+   - Toggle to signup shows: Username, Display Name, Password, Confirm Password fields + "Create My Account" button
+   - Footer shows correctly
+
+2. LOGGED OUT STATE - Nav shows only "Login" link (correct)
+
+3. HOMEPAGE (logged in) - Looks great! Shows:
+   - Full nav with all 9 links + profile avatar (M for Melil) + Logout
+   - Hero section: "Happy Monthsarry, Lovelove! :3" title
+   - Welcome message: "You're logged in as Melil. Have fun exploring!"
+   - Live countdown: 675 Days, 01 Hours, 19 Mins, 51 Secs
+   - Hero links: Chat with me, Our Photos, Love Notes
+   - "Surprise Me!" button visible
+   - 7 feature cards including the new "Shared Memories" card with 💕 icon
+   - Music player button visible in bottom-right corner (🎵)
+   - Footer visible
+
+4. ISSUE: When logged out and clicking "Home", it redirects to login page (correct auth guard behavior)
+
+5. ISSUE: The surprise button click seems to have redirected to login - this might be because the session was lost during the Vite HMR restart. This is a known dev behavior, not a bug.

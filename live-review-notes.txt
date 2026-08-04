@@ -1,0 +1,23 @@
+Live Site Review Notes
+======================
+
+HOMEPAGE (/):
+- Site title: "Happy Monthsarry, Lovelove! :3"
+- Hero section with title and subtitle "Welcome to our secret world."
+- Quick action buttons: Chat with me, Our Photos, Love Notes
+- 6 feature cards below: Freedom Board, Gallery, Love Notes, Chat, Countdown, Contact
+- Cards have icons and descriptions
+- No countdown timer visible on homepage (countdown.js may not be loading)
+- Login link at top (site uses Supabase auth, not the old local auth)
+- Footer: "Made with all my heart for you. © 2026"
+- No navigation bar visible at top - just a "Login" link
+- The site appears to be using the OLD version (pre-refactoring), not our new modular version
+- This suggests the user deployed a different version or the old code
+
+ISSUES FOUND:
+1. No navigation bar - only a "Login" link at top
+2. No countdown timer on homepage
+3. No profile/edit profile functionality visible
+4. No back buttons on pages
+5. Old script.js based architecture (not modular)
+6. The site is using Supabase authentication (email/password) - different from old local auth

@@ -5,12 +5,13 @@
  * Uses Vite's dynamic imports to only load the modules needed for the current page.
  */
 
-import { getSession, setSession, clearSession, login, logout, register, requireAuth, getAllRegisteredUsers } from './lib/auth.js';
+import { getSession, setSession, clearSession, login, logout, register, requireAuth, getAllRegisteredUsers, isLoginPage } from './lib/auth.js';
 import { escapeHtml } from './lib/utils.js';
 import { injectSharedLayout } from './lib/nav.js';
 import { getDisplayName } from './lib/profile.js';
 import { initMusicPlayer } from './lib/music.js';
 import { initSurpriseButton } from './lib/surprises.js';
+import { saveProfile } from './lib/profile.js';
 
 // Determine which page we are on and initialize accordingly
 document.addEventListener("DOMContentLoaded", function () {
@@ -21,6 +22,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // LOGIN PAGE
   if (currentPage === "login.html") {
+    // If already logged in, redirect to home
+    if (getSession()) {
+      window.location.href = "index.html";
+      return;
+    }
     initLoginPage();
     return;
   }
@@ -174,14 +180,10 @@ function initLoginPage() {
         showLoginMessage(document.getElementById("loginMessage"), result.message, true);
 
         // Save profile for the new user
-        const { saveProfile } = require('./lib/profile.js');
-        // Dynamic import for profile save
-        import("./lib/profile.js").then((mod) => {
-          mod.saveProfile(result.user.username, {
-            display_name: displayName || username,
-            avatar_url: "",
-            bio: "",
-          });
+        saveProfile(result.user.username, {
+          display_name: displayName || username,
+          avatar_url: "",
+          bio: "",
         });
 
         setTimeout(() => {
