@@ -7,7 +7,7 @@ export default defineConfig({
     host: true,
     open: false,
     strictPort: true,
-    // CORS and wildcard headers removed — use proxy config if needed
+    allowedHosts: true,
   },
   build: {
     outDir: 'dist',
@@ -22,6 +22,7 @@ export default defineConfig({
         chat: './chat.html',
         countdown: './countdown.html',
         contact: './contact.html',
+        profile: './profile.html',
       },
     },
   },

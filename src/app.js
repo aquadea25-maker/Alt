@@ -7,9 +7,14 @@
 
 import { getSession, setSession, clearSession, login, logout, requireAuth, isLoginPage } from './lib/auth.js';
 import { escapeHtml } from './lib/utils.js';
+import { injectSharedLayout } from './lib/nav.js';
+import { getDisplayName } from './lib/profile.js';
 
 // Determine which page we are on and initialize accordingly
 document.addEventListener("DOMContentLoaded", function () {
+  // Inject shared navigation and footer on every page
+  injectSharedLayout();
+
   const currentPage = window.location.pathname.split("/").pop();
 
   // LOGIN PAGE
@@ -37,7 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
   if (welcomeUser) {
     const ses = getSession();
     if (ses) {
-      welcomeUser.innerHTML = `You're logged in as <b>${escapeHtml(ses.display)}</b>.<br>Have fun exploring!`;
+      const displayName = getDisplayName(ses.username);
+      welcomeUser.innerHTML = `You're logged in as <b>${escapeHtml(displayName)}</b>.<br>Have fun exploring!`;
       const ll = document.getElementById("loginLink");
       if (ll) ll.style.display = "none";
       const lb = document.getElementById("logoutBtn");
@@ -74,6 +80,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     case "countdown.html":
       import("./features/countdown.js").then((mod) => mod.initCountdown());
+      break;
+
+    case "profile.html":
+      import("./lib/profile.js").then((mod) => mod.initProfile());
       break;
   }
 });

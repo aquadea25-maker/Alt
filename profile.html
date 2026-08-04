@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile — Alt</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dreamy-bg">
+    <div id="nav-placeholder"></div>
+
+    <main>
+        <section class="profile-section">
+            <h1 class="page-title">Edit Your Profile</h1>
+            <p class="gallery-hint">Customize how you appear to your partner.</p>
+
+            <form id="profileForm" class="profile-form">
+                <div class="profile-avatar-section">
+                    <div class="avatar-preview-wrapper">
+                        <img id="avatarPreview" src="" alt="Avatar preview" class="avatar-preview">
+                        <label for="profileAvatar" class="avatar-upload-label">Change Photo</label>
+                    </div>
+                    <input type="file" id="profileAvatar" accept="image/*" class="sr-only">
+                </div>
+
+                <label for="profileName">Display Name</label>
+                <input type="text" id="profileName" placeholder="Your display name" required maxlength="30">
+
+                <label for="profileBio">Bio (optional)</label>
+                <textarea id="profileBio" placeholder="Write something about yourself..." rows="3" maxlength="200"></textarea>
+
+                <button type="submit">Save Profile</button>
+            </form>
+            <p id="profileMsg" class="upload-msg"></p>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>

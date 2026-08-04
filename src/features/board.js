@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 import { getSession, setSession } from '../lib/auth.js';
+import { getProfile, getDisplayName } from '../lib/profile.js';
 import { escapeHtml, formatDateTime, createLoadingSpinner, createErrorDisplay } from '../lib/utils.js';
 
 let currentSession = null;
@@ -16,7 +17,8 @@ export function initBoard() {
       window.location.href = "login.html";
       return;
     }
-    currentUserBoard.innerHTML = `You are <b>${escapeHtml(currentSession.display)}</b>. Share your thoughts now!`;
+    const displayName = getDisplayName(currentSession.username);
+    currentUserBoard.innerHTML = `You are <b>${escapeHtml(displayName)}</b>. Share your thoughts now!`;
     const lb = document.getElementById("logoutBtnBoard");
     if (lb) lb.style.display = "inline";
   }
@@ -44,9 +46,12 @@ async function handleBoardSubmit(e) {
   const submitBtn = e.target.querySelector('button[type="submit"]');
   if (submitBtn) submitBtn.disabled = true;
 
+  const profile = getProfile(ses.username);
+  const displayName = profile?.display_name || ses.display;
+
   const { error } = await supabase.from("board_notes").insert({
     username: ses.username,
-    display_name: ses.display,
+    display_name: displayName,
     text,
   });
 
@@ -59,15 +64,16 @@ async function handleBoardSubmit(e) {
 
   document.getElementById("boardNote").value = "";
   // Optimistic UI update — add the note locally before refetching
-  addNoteToBoard(ses, text);
+  addNoteToBoard(ses.username, displayName, text);
 }
 
 /**
  * Add a note to the board DOM without refetching (optimistic update).
- * @param {{username: string, display: string}} ses
+ * @param {string} username
+ * @param {string} displayName
  * @param {string} text
  */
-function addNoteToBoard(ses, text) {
+function addNoteToBoard(username, displayName, text) {
   const boardNotesDiv = document.getElementById("boardNotes");
   if (!boardNotesDiv) return;
 
@@ -81,14 +87,14 @@ function addNoteToBoard(ses, text) {
   block.className = "boardNoteBlock";
   const now = new Date();
   block.innerHTML = `
-    <span class="noteUser">${escapeHtml(ses.display)}</span>
+    <span class="noteUser">${escapeHtml(displayName)}</span>
     <span class="noteTime">${now.toLocaleString()}</span>
     <p>${escapeHtml(text)}</p>
     <button class="noteLike" data-id="new">
       <span class="heart">&#10084;</span>
       <span class="likeCount">0</span>
     </button>
-    ${note.username === ses.username ? "<button class='noteDelete' data-id='new'>Delete</button>" : ""}
+    ${username === currentSession?.username ? "<button class='noteDelete' data-id='new'>Delete</button>" : ""}
   `;
   // Insert at the top
   boardNotesDiv.insertBefore(block, boardNotesDiv.firstChild);
@@ -142,10 +148,13 @@ async function loadBoardNotes() {
     const likeCount = noteLikes.length;
     const hasLiked = noteLikes.some((l) => l.liked_by === ses.username);
 
+    // Use profile display name (fall back to stored display_name)
+    const displayName = getDisplayName(note.username) || note.display_name;
+
     const block = document.createElement("div");
     block.className = "boardNoteBlock";
     block.innerHTML = `
-      <span class="noteUser">${escapeHtml(note.display_name)}</span>
+      <span class="noteUser">${escapeHtml(displayName)}</span>
       <span class="noteTime">${formatDateTime(note.created_at)}</span>
       <p>${escapeHtml(note.text)}</p>
       <button class="noteLike ${hasLiked ? 'liked' : ''}" data-id="${note.id}">
@@ -197,7 +206,6 @@ async function loadBoardNotes() {
           .insert({ note_id: parseInt(id), liked_by: ses2.username });
         if (error) {
           console.error(error.message);
-          // Check for duplicate like (unique constraint violation)
           if (error.code === "23505") {
             return; // Already liked, silently ignore
           }

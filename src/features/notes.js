@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 import { getSession } from '../lib/auth.js';
+import { getProfile, getDisplayName } from '../lib/profile.js';
 import { escapeHtml, formatDateTime, createLoadingSpinner, createErrorDisplay } from '../lib/utils.js';
 
 /**
@@ -41,9 +42,12 @@ async function handleNoteSubmit(e) {
   const submitBtn = e.target.querySelector('button[type="submit"]');
   if (submitBtn) submitBtn.disabled = true;
 
+  const profile = getProfile(ses.username);
+  const displayName = profile?.display_name || ses.display;
+
   const { error } = await supabase.from("love_notes").insert({
     author: ses.username,
-    display_name: ses.display,
+    display_name: displayName,
     title: title,
     body: body,
   });
@@ -98,7 +102,7 @@ async function loadLoveNotes() {
     block.className = "love-note";
     block.innerHTML = `
       ${note.title ? "<h3>" + escapeHtml(note.title) + "</h3>" : ""}
-      <span class="note-author">From ${escapeHtml(note.display_name)}</span>
+      <span class="note-author">From ${escapeHtml(getDisplayName(note.author) || note.display_name)}</span>
       <p class="note-body">${escapeHtml(note.body)}</p>
       <span class="date">${formatDateTime(note.created_at)}</span>
       ${ses && note.author === ses.username ? "<button class='note-delete-btn' data-id='" + note.id + "'>Delete</button>" : ""}

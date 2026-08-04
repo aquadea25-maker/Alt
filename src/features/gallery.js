@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 import { getSession } from '../lib/auth.js';
+import { getProfile, getDisplayName } from '../lib/profile.js';
 import { escapeHtml, createLoadingSpinner, createErrorDisplay } from '../lib/utils.js';
 
 // Default placeholder photos shown when no user uploads exist
@@ -104,9 +105,12 @@ async function handleUploadSubmit(e) {
   const imageUrl = urlData.publicUrl;
   const caption = captionInput.value.trim();
 
+  const profile = getProfile(ses.username);
+  const displayName = profile?.display_name || ses.display;
+
   const { error: dbError } = await supabase.from("gallery_uploads").insert({
     uploaded_by: ses.username,
-    display_name: ses.display,
+    display_name: displayName,
     image_url: imageUrl,
     caption: caption,
   });

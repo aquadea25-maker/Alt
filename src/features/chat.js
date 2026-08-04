@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 import { getSession } from '../lib/auth.js';
+import { getProfile } from '../lib/profile.js';
 import { escapeHtml, formatTime, createLoadingSpinner, createErrorDisplay } from '../lib/utils.js';
 
 /**
@@ -36,7 +37,7 @@ export function initChat() {
         (payload) => {
           if (!loaded) return;
           appendChatMessage(payload.new, ses.username);
-          chatBox.scrollTop = chatBox.scrollHeight;
+          scrollToBottom(chatBox);
         }
       )
       .subscribe();
@@ -61,9 +62,13 @@ export function initChat() {
       const submitBtn = chatForm.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = true;
 
+      // Use current profile display name (synced from profile)
+      const profile = getProfile(ses.username);
+      const displayName = profile?.display_name || ses.display;
+
       const { error } = await supabase.from("chat_messages").insert({
         sender: ses.username,
-        display_name: ses.display,
+        display_name: displayName,
         body: body,
       });
 
@@ -75,6 +80,7 @@ export function initChat() {
       }
 
       chatInput.value = "";
+      chatInput.focus();
     });
   }
 }
@@ -109,7 +115,10 @@ async function loadChatMessages() {
   (messages || []).forEach((msg) => {
     appendChatMessage(msg, ses?.username || "");
   });
-  chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Scroll to bottom after loading
+  scrollToBottom(chatBox);
+  loaded = true;
 }
 
 /**
@@ -124,10 +133,26 @@ function appendChatMessage(msg, currentUsername) {
   const div = document.createElement("div");
   const isMine = msg.sender === currentUsername;
   div.className = "chat-msg " + (isMine ? "mine" : "theirs");
+
+  // Get the latest profile display name for this user
+  const profile = getProfile(msg.sender);
+  const displayName = profile?.display_name || msg.display_name || msg.sender;
+
   div.innerHTML = `
-    ${!isMine ? "<div class='chat-sender'>" + escapeHtml(msg.display_name) + "</div>" : ""}
+    ${!isMine ? "<div class='chat-sender'>" + escapeHtml(displayName) + "</div>" : ""}
     <div>${escapeHtml(msg.body)}</div>
     <div class="chat-time">${formatTime(msg.created_at)}</div>
   `;
   chatBox.appendChild(div);
+}
+
+/**
+ * Smooth scroll to the bottom of the chat box.
+ * @param {HTMLElement} chatBox
+ */
+function scrollToBottom(chatBox) {
+  // Use requestAnimationFrame to ensure DOM is updated
+  requestAnimationFrame(() => {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
 }
