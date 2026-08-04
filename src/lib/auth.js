@@ -22,8 +22,8 @@ export function getAllRegisteredUsers() {
   } catch { /* ignore */ }
   // Default users if none registered yet
   return [
-    { username: "melil", display: "Melil" },
-    { username: "marlie", display: "Marlie" },
+    { username: "melil", display: "Melil", password: "password" },
+    { username: "marlie", display: "Marlie", password: "password" },
   ];
 }
 
