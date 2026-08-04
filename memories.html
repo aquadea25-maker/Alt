@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Memories — Alt</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dreamy-bg">
+    <div id="nav-placeholder"></div>
+
+    <main>
+        <section class="memories-section">
+            <h1 class="page-title">Shared Memories</h1>
+            <p class="gallery-hint">Our journey together, one moment at a time.</p>
+
+            <!-- Timeline -->
+            <div id="timelineContainer"></div>
+
+            <!-- Add Memory Form -->
+            <form id="addMemoryForm" class="memory-form">
+                <h2 class="section-heading">Add a Memory</h2>
+                <label for="memoryTitle">Title</label>
+                <input type="text" id="memoryTitle" placeholder="What happened?" required>
+                <label for="memoryDate">Date</label>
+                <input type="date" id="memoryDate" required>
+                <label for="memoryEmoji">Emoji</label>
+                <input type="text" id="memoryEmoji" placeholder="✨" maxlength="4">
+                <label for="memoryDesc">Description</label>
+                <textarea id="memoryDesc" rows="3" placeholder="Tell the story..." required></textarea>
+                <button type="submit">Add Memory</button>
+            </form>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>

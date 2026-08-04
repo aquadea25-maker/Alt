@@ -5,8 +5,7 @@ import { getSession, setSession } from './auth.js';
  *
  * Profiles are stored in localStorage so each registered user
  * can customize their display name and avatar without needing
- * a Supabase auth table. This keeps the app simple while still
- * letting both partners personalize their identity.
+ * a Supabase auth table.
  *
  * Storage format (localStorage key "dreamyProfiles"):
  *   {
@@ -25,7 +24,6 @@ const DEFAULT_PROFILES = {
 
 /**
  * Get all profiles from localStorage.
- * @returns {Record<string, {display_name: string, avatar_url: string, bio: string}>}
  */
 function getAllProfiles() {
   try {
@@ -41,7 +39,6 @@ function getAllProfiles() {
 
 /**
  * Save all profiles to localStorage.
- * @param {Record<string, {display_name: string, avatar_url: string, bio: string}>} profiles
  */
 function saveAllProfiles(profiles) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
@@ -49,8 +46,6 @@ function saveAllProfiles(profiles) {
 
 /**
  * Get a single user's profile.
- * @param {string} username
- * @returns {{display_name: string, avatar_url: string, bio: string} | null}
  */
 export function getProfile(username) {
   if (!username) return null;
@@ -60,8 +55,6 @@ export function getProfile(username) {
 
 /**
  * Save a user's profile.
- * @param {string} username
- * @param {{display_name: string, avatar_url: string, bio: string}} profileData
  */
 export function saveProfile(username, profileData) {
   const all = getAllProfiles();
@@ -72,13 +65,18 @@ export function saveProfile(username, profileData) {
 /**
  * Get the display name for a user.
  * Falls back to username if no profile exists.
- * @param {string} username
- * @returns {string}
  */
 export function getDisplayName(username) {
   const profile = getProfile(username);
   if (profile?.display_name) return profile.display_name;
   return username;
+}
+
+/**
+ * Get all user profiles (for partner listing).
+ */
+export function getAllUserProfiles() {
+  return getAllProfiles();
 }
 
 /**

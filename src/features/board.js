@@ -3,6 +3,7 @@ import { getSession, setSession } from '../lib/auth.js';
 import { getProfile, getDisplayName } from '../lib/profile.js';
 import { escapeHtml, formatDateTime, createLoadingSpinner, createErrorDisplay } from '../lib/utils.js';
 
+const BOARD_EMOJIS = ['❤️', '😊', '🥺', '😂', '🔥', '😍'];
 let currentSession = null;
 
 /**
@@ -33,7 +34,6 @@ export function initBoard() {
 
 /**
  * Handle Freedom Board form submission.
- * @param {Event} e
  */
 async function handleBoardSubmit(e) {
   e.preventDefault();
@@ -63,48 +63,12 @@ async function handleBoardSubmit(e) {
   }
 
   document.getElementById("boardNote").value = "";
-  // Optimistic UI update — add the note locally before refetching
-  addNoteToBoard(ses.username, displayName, text);
+  // Refetch after posting
+  setTimeout(() => loadBoardNotes(), 300);
 }
 
 /**
- * Add a note to the board DOM without refetching (optimistic update).
- * @param {string} username
- * @param {string} displayName
- * @param {string} text
- */
-function addNoteToBoard(username, displayName, text) {
-  const boardNotesDiv = document.getElementById("boardNotes");
-  if (!boardNotesDiv) return;
-
-  // Remove "No notes yet" message if present
-  const placeholder = boardNotesDiv.querySelector("p");
-  if (placeholder && boardNotesDiv.children.length === 1) {
-    boardNotesDiv.innerHTML = "";
-  }
-
-  const block = document.createElement("div");
-  block.className = "boardNoteBlock";
-  const now = new Date();
-  block.innerHTML = `
-    <span class="noteUser">${escapeHtml(displayName)}</span>
-    <span class="noteTime">${now.toLocaleString()}</span>
-    <p>${escapeHtml(text)}</p>
-    <button class="noteLike" data-id="new">
-      <span class="heart">&#10084;</span>
-      <span class="likeCount">0</span>
-    </button>
-    ${username === currentSession?.username ? "<button class='noteDelete' data-id='new'>Delete</button>" : ""}
-  `;
-  // Insert at the top
-  boardNotesDiv.insertBefore(block, boardNotesDiv.firstChild);
-
-  // Refetch after a short delay to sync with the server
-  setTimeout(() => loadBoardNotes(), 500);
-}
-
-/**
- * Load all board notes from Supabase.
+ * Load all board notes from Supabase with reactions.
  */
 async function loadBoardNotes() {
   const boardNotesDiv = document.getElementById("boardNotes");
@@ -135,6 +99,7 @@ async function loadBoardNotes() {
     return;
   }
 
+  // Fetch likes (hearts)
   const noteIds = notes.map((n) => n.id);
   const { data: likes } = await supabase
     .from("note_likes")
@@ -148,8 +113,9 @@ async function loadBoardNotes() {
     const likeCount = noteLikes.length;
     const hasLiked = noteLikes.some((l) => l.liked_by === ses.username);
 
-    // Use profile display name (fall back to stored display_name)
+    // Use profile display name
     const displayName = getDisplayName(note.username) || note.display_name;
+    const reactions = parseReactions(note.reactions);
 
     const block = document.createElement("div");
     block.className = "boardNoteBlock";
@@ -157,6 +123,12 @@ async function loadBoardNotes() {
       <span class="noteUser">${escapeHtml(displayName)}</span>
       <span class="noteTime">${formatDateTime(note.created_at)}</span>
       <p>${escapeHtml(note.text)}</p>
+      <div class="note-reactions">
+        ${renderReactions(reactions, note.id, ses.username)}
+        <div class="note-emoji-picker">
+          ${BOARD_EMOJIS.map((emoji) => `<button class="emoji-react-btn" data-note-id="${note.id}" data-emoji="${emoji}">${emoji}</button>`).join('')}
+        </div>
+      </div>
       <button class="noteLike ${hasLiked ? 'liked' : ''}" data-id="${note.id}">
         <span class="heart">&#10084;</span>
         <span class="likeCount">${likeCount}</span>
@@ -164,6 +136,15 @@ async function loadBoardNotes() {
       ${note.username === ses.username ? "<button class='noteDelete' data-id='" + note.id + "'>Delete</button>" : ""}
     `;
     boardNotesDiv.appendChild(block);
+  });
+
+  // Wire up emoji reaction buttons
+  boardNotesDiv.querySelectorAll(".emoji-react-btn").forEach((btn) => {
+    btn.addEventListener("click", async function () {
+      const noteId = btn.getAttribute("data-note-id");
+      const emoji = btn.getAttribute("data-emoji");
+      await toggleBoardReaction(noteId, emoji, ses.username);
+    });
   });
 
   // Wire up delete buttons
@@ -182,7 +163,7 @@ async function loadBoardNotes() {
     });
   });
 
-  // Wire up like buttons
+  // Wire up like buttons (heart)
   boardNotesDiv.querySelectorAll(".noteLike").forEach((btn) => {
     btn.addEventListener("click", async function () {
       const ses2 = getSession();
@@ -191,28 +172,86 @@ async function loadBoardNotes() {
       const hasLiked = btn.classList.contains("liked");
 
       if (hasLiked) {
-        const { error } = await supabase
-          .from("note_likes")
-          .delete()
-          .eq("note_id", id)
-          .eq("liked_by", ses2.username);
-        if (error) {
-          console.error(error.message);
-          return;
-        }
+        await supabase.from("note_likes").delete().eq("note_id", id).eq("liked_by", ses2.username);
       } else {
-        const { error } = await supabase
-          .from("note_likes")
-          .insert({ note_id: parseInt(id), liked_by: ses2.username });
-        if (error) {
-          console.error(error.message);
-          if (error.code === "23505") {
-            return; // Already liked, silently ignore
-          }
-          return;
-        }
+        const { error } = await supabase.from("note_likes").insert({ note_id: parseInt(id), liked_by: ses2.username });
+        if (error?.code === "23505") return;
       }
       loadBoardNotes();
     });
   });
+}
+
+/**
+ * Parse reactions from JSON string.
+ */
+function parseReactions(reactionsStr) {
+  if (!reactionsStr) return [];
+  try {
+    return JSON.parse(reactionsStr);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Render emoji reactions for a board note.
+ */
+function renderReactions(reactions, noteId, currentUsername) {
+  if (!reactions || reactions.length === 0) return '';
+  const counts = {};
+  reactions.forEach((r) => {
+    if (!counts[r.emoji]) counts[r.emoji] = 0;
+    counts[r.emoji]++;
+  });
+
+  return '<div class="note-emoji-reactions">' +
+    Object.entries(counts).map(([emoji, count]) => {
+      const isMine = reactions.some((r) => r.emoji === emoji && r.user === currentUsername);
+      return `<button class="note-emoji-badge ${isMine ? 'active' : ''}" data-note-id="${noteId}" data-emoji="${emoji}">${emoji} ${count}</button>`;
+    }).join('') +
+    '</div>';
+}
+
+/**
+ * Toggle an emoji reaction on a board note.
+ */
+async function toggleBoardReaction(noteId, emoji, username) {
+  const boardNotesDiv = document.getElementById("boardNotes");
+  if (!boardNotesDiv) return;
+
+  // Find the note in current notes to get current reactions
+  const { data: notes, error } = await supabase
+    .from("board_notes")
+    .select("reactions")
+    .eq("id", noteId)
+    .single();
+
+  if (error) {
+    console.error("Failed to load reactions:", error.message);
+    return;
+  }
+
+  const reactions = parseReactions(notes?.reactions);
+  const existingIdx = reactions.findIndex(
+    (r) => r.emoji === emoji && r.user === username
+  );
+
+  if (existingIdx >= 0) {
+    reactions.splice(existingIdx, 1);
+  } else {
+    reactions.push({ emoji, user: username });
+  }
+
+  const { error: updateError } = await supabase
+    .from("board_notes")
+    .update({ reactions: JSON.stringify(reactions) })
+    .eq("id", noteId);
+
+  if (updateError) {
+    console.error("Failed to update reactions:", updateError.message);
+    return;
+  }
+
+  loadBoardNotes();
 }

@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // Use /Alt/ base path for GitHub Pages deployment under the repo name
-  base: '/Alt/',
+  base: '/',
   root: '.',
   server: {
     port: 3000,
@@ -25,6 +24,7 @@ export default defineConfig({
         countdown: './countdown.html',
         contact: './contact.html',
         profile: './profile.html',
+        memories: './memories.html',
       },
     },
   },

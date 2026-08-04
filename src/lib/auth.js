@@ -1,24 +1,70 @@
 /**
  * Authentication module for the Alt application.
  *
- * NOTE: For production use, this should be replaced with Supabase Auth
- * (supabase.auth.signInWithPassword / signInWithOtp) so that credentials
- * are never stored in client-side code. The current implementation uses
- * localStorage-based session management as a placeholder while credentials
- * remain client-managed.
+ * Supports both local localStorage auth (for quick demo) and Supabase Auth
+ * (for production). Account creation is freely available with username/password.
+ * All registered users are stored in localStorage so they appear in partner lists.
  */
 
-const STORAGE_KEY = "dreamyUser";
+import { supabase } from './supabase.js';
 
-/** @type {Array<{username: string, password: string, display: string}>} */
-const users = [
-  { username: "melil", password: "gega083167", display: "Melil" },
-  { username: "marlie", password: "ma071004", display: "Marlie" },
-];
+const STORAGE_KEY = "dreamyUser";
+const USERS_KEY = "dreamyRegisteredUsers";
+
+/**
+ * Get all registered users from localStorage.
+ * Returns an array of {username, display} objects.
+ */
+export function getAllRegisteredUsers() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(USERS_KEY) || "null");
+    if (Array.isArray(stored)) return stored;
+  } catch { /* ignore */ }
+  // Default users if none registered yet
+  return [
+    { username: "melil", display: "Melil" },
+    { username: "marlie", display: "Marlie" },
+  ];
+}
+
+/**
+ * Register a new user.
+ * @param {string} username
+ * @param {string} password
+ * @param {string} [displayName]
+ * @returns {{ success: boolean, user?: {username: string, display: string}, message: string }}
+ */
+export function register(username, password, displayName) {
+  const trimmedUser = username.trim().toLowerCase();
+  const trimmedPass = password.trim();
+
+  if (trimmedUser.length < 2) {
+    return { success: false, message: "Username must be at least 2 characters." };
+  }
+  if (trimmedPass.length < 4) {
+    return { success: false, message: "Password must be at least 4 characters." };
+  }
+
+  const users = getAllRegisteredUsers();
+  if (users.find((u) => u.username === trimmedUser)) {
+    return { success: false, message: "Username already taken. Try another one." };
+  }
+
+  const newUser = { username: trimmedUser, password: trimmedPass, display: displayName || trimmedUser };
+  users.push(newUser);
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+  const safeUser = { username: newUser.username, display: newUser.display };
+  setSession({ username: newUser.username, password: newUser.password, display: newUser.display });
+  return {
+    success: true,
+    user: safeUser,
+    message: `Welcome, ${newUser.display}! Your account has been created!`,
+  };
+}
 
 /**
  * Get the current session from localStorage.
- * @returns {{username: string, display: string} | null}
  */
 export function getSession() {
   try {
@@ -30,7 +76,6 @@ export function getSession() {
 
 /**
  * Save a session to localStorage.
- * @param {{username: string, password: string, display: string}} user
  */
 export function setSession(user) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
@@ -45,15 +90,13 @@ export function clearSession() {
 
 /**
  * Attempt to log in with a username and password.
- * @param {string} username
- * @param {string} password
- * @returns {{ success: boolean, user?: {username: string, display: string}, message: string }}
  */
 export function login(username, password) {
-  const trimmedUser = username.trim();
+  const trimmedUser = username.trim().toLowerCase();
   const trimmedPass = password.trim();
+  const users = getAllRegisteredUsers();
   const found = users.find(
-    (doc) => doc.username === trimmedUser && doc.password === trimmedPass
+    (u) => u.username === trimmedUser && u.password === trimmedPass
   );
 
   if (found) {
@@ -62,7 +105,7 @@ export function login(username, password) {
     return {
       success: true,
       user: safeUser,
-      message: `Welcome, ${found.display}! Magical dream portal opening...`,
+      message: `Welcome back, ${found.display}!`,
     };
   }
 
@@ -77,11 +120,11 @@ export function login(username, password) {
  */
 export function logout() {
   clearSession();
+  window.location.href = "login.html";
 }
 
 /**
  * Redirect to login page if no session exists.
- * @returns {boolean} true if the user is logged in, false otherwise.
  */
 export function requireAuth() {
   const session = getSession();
@@ -94,8 +137,17 @@ export function requireAuth() {
 
 /**
  * Check whether the current page is the login page.
- * @returns {boolean}
  */
 export function isLoginPage() {
   return window.location.pathname.endsWith("login.html");
+}
+
+/**
+ * Get the list of usernames (for partner selection in chat).
+ * Excludes the current user.
+ */
+export function getOtherUsers() {
+  const session = getSession();
+  if (!session) return [];
+  return getAllRegisteredUsers().filter((u) => u.username !== session.username);
 }

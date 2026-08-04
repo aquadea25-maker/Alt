@@ -1,21 +1,33 @@
-import { getSession } from './auth.js';
-import { getProfile } from './profile.js';
+import { getSession, isLoginPage } from './auth.js';
+import { getDisplayName, getProfile } from './profile.js';
+import { escapeHtml } from './utils.js';
 
 // Pages that are NOT main features (don't need a back button)
 const MAIN_PAGES = ['index.html', 'login.html', ''];
 
+// All feature pages for nav links
+const NAV_LINKS = [
+  { href: "index.html", label: "Home" },
+  { href: "freedomboard.html", label: "Board" },
+  { href: "gallery.html", label: "Gallery" },
+  { href: "blog.html", label: "Notes" },
+  { href: "chat.html", label: "Chat" },
+  { href: "countdown.html", label: "Countdown" },
+  { href: "memories.html", label: "Memories" },
+  { href: "contact.html", label: "Contact" },
+  { href: "profile.html", label: "Profile" },
+];
+
 /**
  * Build the navigation HTML string.
- * @param {string} currentPage - The current page filename (e.g., "index.html").
+ * @param {string} currentPage - The current page filename.
  * @returns {string} HTML string for the nav element.
  */
 export function buildNav(currentPage) {
   const session = getSession();
-  const isMainPage = MAIN_PAGES.includes(currentPage);
 
-  const loginLinkStyle = session ? 'style="display:none"' : '';
-  const logoutStyle = session ? '' : 'style="display:none"';
-  const navStyle = session ? '' : 'style="display:none"';
+  // Always show nav (even for login page, just minimal)
+  const isMainPage = MAIN_PAGES.includes(currentPage);
 
   // Build profile section (avatar + display name)
   let profileHtml = '';
@@ -25,30 +37,35 @@ export function buildNav(currentPage) {
     profileHtml = `
       <li class="nav-profile">
         <a href="profile.html" class="nav-profile-link" title="Edit Profile">
-          <img src="${profile?.avatar_url || ''}" alt="${displayName}" class="nav-avatar"
-               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2218%22 fill=%22%23bf8ad6%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>${displayName.charAt(0).toUpperCase()}</text></svg>'">
-          <span class="nav-profile-name">${displayName}</span>
+          ${profile?.avatar_url
+            ? `<img src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(displayName)}" class="nav-avatar">`
+            : `<span class="nav-avatar-fallback">${displayName.charAt(0).toUpperCase()}</span>`
+          }
+          <span class="nav-profile-name">${escapeHtml(displayName)}</span>
         </a>
       </li>`;
   }
 
-  const navLinks = `
-    <nav id="mainNav" ${navStyle}>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="freedomboard.html">Freedom Board</a></li>
-        <li><a href="gallery.html">Gallery</a></li>
-        <li><a href="blog.html">Love Notes</a></li>
-        <li><a href="chat.html">Chat</a></li>
-        <li><a href="countdown.html">Countdown</a></li>
-        <li><a href="contact.html">Contact</a></li>
+  // Build nav links
+  const navLinks = NAV_LINKS.map((link) => {
+    const isActive = link.href === currentPage ? ' class="active"' : '';
+    return `<li><a href="${link.href}"${isActive}>${link.label}</a></li>`;
+  }).join("");
+
+  const navHtml = session
+    ? `
+    <nav id="mainNav">
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">&#9776;</button>
+      <ul id="navMenu">
+        ${navLinks}
         ${profileHtml}
-        <li><a href="#" id="logoutBtn" ${logoutStyle}>Logout</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
       </ul>
-    </nav>
-    <nav class="login-nav" ${!session ? '' : 'style="display:none"'}>
+    </nav>`
+    : `
+    <nav class="login-nav">
       <ul>
-        <li><a href="login.html" id="loginLink">Login</a></li>
+        <li><a href="login.html">Login</a></li>
       </ul>
     </nav>`;
 
@@ -58,16 +75,15 @@ export function buildNav(currentPage) {
       <a href="index.html" class="back-button" title="Go back to Home">&larr; Back</a>
     </div>` : '';
 
-  return navLinks + backBtn;
+  return navHtml + backBtn;
 }
 
 /**
  * Build the footer HTML string.
- * @returns {string} HTML string for the footer element.
  */
 export function buildFooter() {
   return `<footer>
-    <small>Made with all my heart for you. &copy; 2025</small>
+    <small>Made with all my heart for you. &copy; ${new Date().getFullYear()}</small>
 </footer>`;
 }
 

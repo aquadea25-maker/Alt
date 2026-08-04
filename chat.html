@@ -15,7 +15,14 @@
     <main>
         <section class="chat-section">
             <h1 class="page-title">Our Chat</h1>
-            <p class="gallery-hint">Talk to each other in real time. Messages appear instantly for both of you.</p>
+
+            <!-- Partner selector -->
+            <div class="chat-partner-bar">
+                <span>Chatting with:</span>
+                <select id="partnerSelect" aria-label="Select chat partner"></select>
+                <span id="partnerStatus" class="partner-status"></span>
+            </div>
+
             <div class="chat-box" id="chatBox" role="log" aria-label="Chat messages"></div>
             <form id="chatForm" class="chat-input-row">
                 <label for="chatInput" class="sr-only">Type a message</label>
