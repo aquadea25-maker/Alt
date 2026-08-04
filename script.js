@@ -30,6 +30,13 @@ function escapeHtml(str) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Redirect to login if not logged in (skip on login page itself)
+    const isLoginPage = window.location.pathname.endsWith("login.html");
+    if (!isLoginPage && !getSession()) {
+        window.location.href = "login.html";
+        return;
+    }
+
     // LOGIN LOGIC
     const loginForm = document.getElementById("loginForm");
     if (loginForm) {
