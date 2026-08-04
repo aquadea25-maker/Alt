@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Use /Alt/ base path for GitHub Pages deployment under the repo name
+  base: '/Alt/',
   root: '.',
   server: {
     port: 3000,
