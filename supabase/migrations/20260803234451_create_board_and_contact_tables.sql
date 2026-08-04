@@ -16,8 +16,9 @@
 
 2. Security
 - Enable RLS on both tables.
-- This is a no-auth app (login is a hardcoded local check, not Supabase auth),
-  so all data is intentionally shared. Policies allow anon + authenticated CRUD.
+- Board notes: authenticated users can read all, insert their own, delete their own.
+- Contact messages: authenticated users can read all, insert anonymously.
+  Contact messages are not deletable through the UI to preserve records.
 */
 
 CREATE TABLE IF NOT EXISTS board_notes (
@@ -30,18 +31,22 @@ CREATE TABLE IF NOT EXISTS board_notes (
 
 ALTER TABLE board_notes ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "anon_select_board_notes" ON board_notes;
-CREATE POLICY "anon_select_board_notes" ON board_notes FOR SELECT
-  TO anon, authenticated USING (true);
+-- Everyone can read board notes
+DROP POLICY IF EXISTS "select_board_notes" ON board_notes;
+CREATE POLICY "select_board_notes" ON board_notes FOR SELECT
+  TO authenticated USING (true);
 
-DROP POLICY IF EXISTS "anon_insert_board_notes" ON board_notes;
-CREATE POLICY "anon_insert_board_notes" ON board_notes FOR INSERT
-  TO anon, authenticated WITH CHECK (true);
+-- Users can insert board notes
+DROP POLICY IF EXISTS "insert_board_notes" ON board_notes;
+CREATE POLICY "insert_board_notes" ON board_notes FOR INSERT
+  TO authenticated WITH CHECK (true);
 
-DROP POLICY IF EXISTS "anon_delete_board_notes" ON board_notes;
-CREATE POLICY "anon_delete_board_notes" ON board_notes FOR DELETE
-  TO anon, authenticated USING (true);
+-- Users can only delete their own board notes
+DROP POLICY IF EXISTS "delete_board_notes" ON board_notes;
+CREATE POLICY "delete_board_notes" ON board_notes FOR DELETE
+  TO authenticated USING (username = auth.jwt() ->> 'user_metadata' ->> 'username');
 
+-- Contact messages table
 CREATE TABLE IF NOT EXISTS contact_messages (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name text NOT NULL,
@@ -51,14 +56,17 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "anon_select_contact_messages" ON contact_messages;
-CREATE POLICY "anon_select_contact_messages" ON contact_messages FOR SELECT
-  TO anon, authenticated USING (true);
+-- Everyone can read contact messages
+DROP POLICY IF EXISTS "select_contact_messages" ON contact_messages;
+CREATE POLICY "select_contact_messages" ON contact_messages FOR SELECT
+  TO authenticated USING (true);
 
-DROP POLICY IF EXISTS "anon_insert_contact_messages" ON contact_messages;
-CREATE POLICY "anon_insert_contact_messages" ON contact_messages FOR INSERT
+-- Anyone can insert contact messages
+DROP POLICY IF EXISTS "insert_contact_messages" ON contact_messages;
+CREATE POLICY "insert_contact_messages" ON contact_messages FOR INSERT
   TO anon, authenticated WITH CHECK (true);
 
-DROP POLICY IF EXISTS "anon_delete_contact_messages" ON contact_messages;
-CREATE POLICY "anon_delete_contact_messages" ON contact_messages FOR DELETE
-  TO anon, authenticated USING (true);
+-- Contact messages cannot be deleted (preserve records)
+DROP POLICY IF EXISTS "delete_contact_messages" ON contact_messages;
+CREATE POLICY "delete_contact_messages" ON contact_messages FOR DELETE
+  TO authenticated USING (false);

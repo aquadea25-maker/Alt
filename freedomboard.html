@@ -2,35 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Freedom Board</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freedom Board — Alt</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="dreamy-bg">
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="gallery.html">Gallery</a></li>
-            <li><a href="blog.html">Love Notes</a></li>
-            <li><a href="chat.html">Chat</a></li>
-            <li><a href="countdown.html">Countdown</a></li>
-            <li><a href="contact.html">Contact</a></li>
-            <li><a href="#" id="logoutBtnBoard">Logout</a></li>
-        </ul>
-    </nav>
-    <section class="notes-section">
-        <h1>Freedom Board 🌈</h1>
-        <p id="currentUserBoard"></p>
-        <form id="boardForm" class="contact-section">
-            <input type="text" id="boardNote" placeholder="Share your thoughts..." required>
-            <button type="submit">Post</button>
-        </form>
-        <div id="boardNotes"></div>
-    </section>
-    <footer>
-        <small>
-            Our magical thoughts board. &copy; 2025
-        </small>
-    </footer>
-    <script type="module" src="script.js"></script>
+    <div id="nav-placeholder"></div>
+
+    <main>
+        <section class="notes-section">
+            <h1 class="page-title">Freedom Board</h1>
+            <p id="currentUserBoard"></p>
+            <form id="boardForm" class="contact-section">
+                <input type="text" id="boardNote" placeholder="Share your thoughts..." required aria-label="Your message">
+                <button type="submit">Post</button>
+            </form>
+            <div id="boardNotes" role="feed" aria-label="Board notes"></div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="src/app.js"></script>
 </body>
 </html>

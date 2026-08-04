@@ -11,7 +11,8 @@
 
 2. Security
 - Enable RLS on note_likes.
-- No-auth app: allow anon + authenticated CRUD.
+- Authenticated users can read all likes.
+- Authenticated users can insert likes and delete their own likes.
 */
 
 CREATE TABLE IF NOT EXISTS note_likes (
@@ -24,14 +25,17 @@ CREATE TABLE IF NOT EXISTS note_likes (
 
 ALTER TABLE note_likes ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "anon_select_note_likes" ON note_likes;
-CREATE POLICY "anon_select_note_likes" ON note_likes FOR SELECT
-  TO anon, authenticated USING (true);
+-- Everyone can read likes
+DROP POLICY IF EXISTS "select_note_likes" ON note_likes;
+CREATE POLICY "select_note_likes" ON note_likes FOR SELECT
+  TO authenticated USING (true);
 
-DROP POLICY IF EXISTS "anon_insert_note_likes" ON note_likes;
-CREATE POLICY "anon_insert_note_likes" ON note_likes FOR INSERT
-  TO anon, authenticated WITH CHECK (true);
+-- Authenticated users can insert likes
+DROP POLICY IF EXISTS "insert_note_likes" ON note_likes;
+CREATE POLICY "insert_note_likes" ON note_likes FOR INSERT
+  TO authenticated WITH CHECK (true);
 
-DROP POLICY IF EXISTS "anon_delete_note_likes" ON note_likes;
-CREATE POLICY "anon_delete_note_likes" ON note_likes FOR DELETE
-  TO anon, authenticated USING (true);
+-- Users can only delete their own likes
+DROP POLICY IF EXISTS "delete_note_likes" ON note_likes;
+CREATE POLICY "delete_note_likes" ON note_likes FOR DELETE
+  TO authenticated USING (liked_by = auth.jwt() ->> 'user_metadata' ->> 'username');

@@ -10,8 +10,11 @@
   - id, uploaded_by (username), display_name, image_url, caption, created_at
 
 2. Security
-- No-auth app pattern: allow anon + authenticated CRUD on all tables.
-- RLS enabled on all tables.
+- Enable RLS on all tables.
+- love_notes: authenticated users can read all, insert their own, delete their own.
+- chat_messages: authenticated users can read all, insert messages.
+  Deletion is restricted to prevent accidental loss.
+- gallery_uploads: authenticated users can read all, insert their own, delete their own.
 */
 
 -- Love Notes
@@ -23,16 +26,20 @@ CREATE TABLE IF NOT EXISTS love_notes (
   body text NOT NULL,
   created_at timestamptz DEFAULT now()
 );
+
 ALTER TABLE love_notes ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "anon_select_love_notes" ON love_notes;
-CREATE POLICY "anon_select_love_notes" ON love_notes FOR SELECT
-  TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "anon_insert_love_notes" ON love_notes;
-CREATE POLICY "anon_insert_love_notes" ON love_notes FOR INSERT
-  TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "anon_delete_love_notes" ON love_notes;
-CREATE POLICY "anon_delete_love_notes" ON love_notes FOR DELETE
-  TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "select_love_notes" ON love_notes;
+CREATE POLICY "select_love_notes" ON love_notes FOR SELECT
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "insert_love_notes" ON love_notes;
+CREATE POLICY "insert_love_notes" ON love_notes FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "delete_love_notes" ON love_notes;
+CREATE POLICY "delete_love_notes" ON love_notes FOR DELETE
+  TO authenticated USING (author = auth.jwt() ->> 'user_metadata' ->> 'username');
 
 -- Chat Messages
 CREATE TABLE IF NOT EXISTS chat_messages (
@@ -42,16 +49,21 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   body text NOT NULL,
   created_at timestamptz DEFAULT now()
 );
+
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "anon_select_chat_messages" ON chat_messages;
-CREATE POLICY "anon_select_chat_messages" ON chat_messages FOR SELECT
-  TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "anon_insert_chat_messages" ON chat_messages;
-CREATE POLICY "anon_insert_chat_messages" ON chat_messages FOR INSERT
-  TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "anon_delete_chat_messages" ON chat_messages;
-CREATE POLICY "anon_delete_chat_messages" ON chat_messages FOR DELETE
-  TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "select_chat_messages" ON chat_messages;
+CREATE POLICY "select_chat_messages" ON chat_messages FOR SELECT
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "insert_chat_messages" ON chat_messages;
+CREATE POLICY "insert_chat_messages" ON chat_messages FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+-- Chat messages are not deletable to preserve conversation history
+DROP POLICY IF EXISTS "delete_chat_messages" ON chat_messages;
+CREATE POLICY "delete_chat_messages" ON chat_messages FOR DELETE
+  TO authenticated USING (false);
 
 -- Gallery Uploads
 CREATE TABLE IF NOT EXISTS gallery_uploads (
@@ -62,13 +74,17 @@ CREATE TABLE IF NOT EXISTS gallery_uploads (
   caption text NOT NULL DEFAULT '',
   created_at timestamptz DEFAULT now()
 );
+
 ALTER TABLE gallery_uploads ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "anon_select_gallery_uploads" ON gallery_uploads;
-CREATE POLICY "anon_select_gallery_uploads" ON gallery_uploads FOR SELECT
-  TO anon, authenticated USING (true);
-DROP POLICY IF EXISTS "anon_insert_gallery_uploads" ON gallery_uploads;
-CREATE POLICY "anon_insert_gallery_uploads" ON gallery_uploads FOR INSERT
-  TO anon, authenticated WITH CHECK (true);
-DROP POLICY IF EXISTS "anon_delete_gallery_uploads" ON gallery_uploads;
-CREATE POLICY "anon_delete_gallery_uploads" ON gallery_uploads FOR DELETE
-  TO anon, authenticated USING (true);
+
+DROP POLICY IF EXISTS "select_gallery_uploads" ON gallery_uploads;
+CREATE POLICY "select_gallery_uploads" ON gallery_uploads FOR SELECT
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "insert_gallery_uploads" ON gallery_uploads;
+CREATE POLICY "insert_gallery_uploads" ON gallery_uploads FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "delete_gallery_uploads" ON gallery_uploads;
+CREATE POLICY "delete_gallery_uploads" ON gallery_uploads FOR DELETE
+  TO authenticated USING (uploaded_by = auth.jwt() ->> 'user_metadata' ->> 'username');

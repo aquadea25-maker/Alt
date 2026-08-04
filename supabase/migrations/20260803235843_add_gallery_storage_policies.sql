@@ -1,19 +1,27 @@
 /*
 # Storage policies for gallery-photos bucket
-# Allow anon + authenticated to upload, read, and delete photos.
+
+Policies:
+- Upload: only authenticated users can upload, and files must be in their own folder.
+- Read: anyone can read photos (public gallery).
+- Delete: only authenticated users can delete, and only from their own folder.
 */
 
-DROP POLICY IF EXISTS "anon_upload_gallery_photos" ON storage.objects;
-CREATE POLICY "anon_upload_gallery_photos" ON storage.objects
-  FOR INSERT TO anon, authenticated
-  WITH CHECK (bucket_id = 'gallery-photos');
+DROP POLICY IF EXISTS "upload_gallery_photos" ON storage.objects;
+CREATE POLICY "upload_gallery_photos" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'gallery-photos'
+  );
 
-DROP POLICY IF EXISTS "anon_read_gallery_photos" ON storage.objects;
-CREATE POLICY "anon_read_gallery_photos" ON storage.objects
+DROP POLICY IF EXISTS "read_gallery_photos" ON storage.objects;
+CREATE POLICY "read_gallery_photos" ON storage.objects
   FOR SELECT TO anon, authenticated
   USING (bucket_id = 'gallery-photos');
 
-DROP POLICY IF EXISTS "anon_delete_gallery_photos" ON storage.objects;
-CREATE POLICY "anon_delete_gallery_photos" ON storage.objects
-  FOR DELETE TO anon, authenticated
-  USING (bucket_id = 'gallery-photos');
+DROP POLICY IF EXISTS "delete_gallery_photos" ON storage.objects;
+CREATE POLICY "delete_gallery_photos" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'gallery-photos'
+  );

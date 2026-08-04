@@ -1,2 +1,24 @@
+# Dependencies
 node_modules/
+
+# Environment variables (secrets)
 .env
+.env.local
+
+# Build output
+dist/
+.vite/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Improvements report (not part of the site)
+improvements.md
